@@ -178,9 +178,7 @@ class DisplayDL1Calib(Tool):
         self.plotter = None
 
     def setup(self):
-        self.eventsource = self.add_component(
-            EventSource.from_url(self.config.EventSource.input_url, parent=self)
-        )
+        self.eventsource = self.add_component(EventSource.from_url(parent=self))
 
         self.calibrator = self.add_component(CameraCalibrator(
             parent=self, subarray=self.eventsource.subarray

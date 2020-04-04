@@ -235,7 +235,7 @@ class EventSource(Component):
         pass
 
     @classmethod
-    def from_url(cls, input_url, **kwargs):
+    def from_url(cls, input_url=None, **kwargs):
         """
         Find compatible EventSource for input_url via the `is_compatible`
         method of the EventSource
@@ -252,7 +252,18 @@ class EventSource(Component):
         instance
             Instance of a compatible EventSource subclass
         """
-        if input_url == "" or input_url is None:
+        parent = kwargs.pop('parent', None)
+        config = kwargs.pop('config', None)
+        if config is not None and parent is not None:
+            raise ValueError('Only specify one of parent or config')
+
+        if input_url is None and config is not None:
+            input_url = config.input_url
+
+        if input_url is None and parent is not None:
+            input_url = parent.config.EventSource.input_url
+
+        if not input_url:
             raise ToolConfigurationError("EventSource: No input_url was specified")
 
         detect_and_import_io_plugins()
@@ -260,7 +271,7 @@ class EventSource(Component):
 
         for subcls in available_classes:
             if subcls.is_compatible(input_url):
-                return subcls(input_url=input_url, **kwargs)
+                return subcls(input_url=input_url, config=config, parent=parent, **kwargs)
 
         raise ValueError(
             "Cannot find compatible EventSource for \n"
