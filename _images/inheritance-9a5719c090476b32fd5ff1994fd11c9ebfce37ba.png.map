@@ -1,0 +1,17 @@
+<map id="inheritance15086fe116" name="inheritance15086fe116">
+<area shape="rect" id="node1" title="A singleton application with full configuration support." alt="" coords="625,211,687,228"/>
+<area shape="rect" id="node17" title="A base class for all executable tools (applications) that handles" alt="" coords="718,211,765,228"/>
+<area shape="rect" id="node2" title="A configurable that only allows one instance." alt="" coords="487,211,594,228"/>
+<area shape="rect" id="node3" title="Base class of all Components." alt="" coords="374,179,437,196"/>
+<area shape="rect" id="node15" title="Manages a set of user&#45;configurable (at runtime or in a config file) selection" alt="" coords="505,147,575,164"/>
+<area shape="rect" id="node16" title="A component that needs a SubarrayDescription to be constructed, and which" alt="" coords="488,179,593,196"/>
+<area shape="rect" id="node10" title="A parent class for Configurables that log." alt="" coords="355,211,455,228"/>
+<area shape="rect" id="node6" title="Generic class that can hold and accumulate data to be passed" alt="" coords="30,164,85,180"/>
+<area shape="rect" id="node7" title="used to mark which fields may be removed in next version" alt="" coords="143,132,225,148"/>
+<area shape="rect" id="node8" title="Class for storing data in `Containers`." alt="" coords="34,132,81,148"/>
+<area shape="rect" id="node9" title="The base class for all classes that have descriptors." alt="" coords="18,196,97,212"/>
+<area shape="rect" id="node11" title="A dictionary of sub&#45;containers that can be added to a Container. This" alt="" coords="161,100,207,116"/>
+<area shape="rect" id="node12" title="defaultdict(default_factory[, ...]) &#45;&#45;&gt; dict with default factory" alt="" coords="28,100,87,116"/>
+<area shape="rect" id="node13" title="Manage the provenance info for a stack of *activities*" alt="" coords="26,68,90,84"/>
+<area shape="rect" id="node14" title="Signal a problem with a user&#45;defined selection criteria function" alt="" coords="10,35,106,52"/>
+</map>

@@ -1,0 +1,6 @@
+taubin_circle_fit
+=================
+
+.. currentmodule:: ctapipe.image.muon
+
+.. autofunction:: taubin_circle_fit

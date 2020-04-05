@@ -1,0 +1,23 @@
+TelEventIndexContainer
+======================
+
+.. currentmodule:: ctapipe.io.containers
+
+.. autoclass:: TelEventIndexContainer
+   :show-inheritance:
+
+   .. rubric:: Attributes Summary
+
+   .. autosummary::
+
+      ~TelEventIndexContainer.meta
+      ~TelEventIndexContainer.prefix
+      ~TelEventIndexContainer.tel_id
+      ~TelEventIndexContainer.tel_type_id
+
+   .. rubric:: Attributes Documentation
+
+   .. autoattribute:: meta
+   .. autoattribute:: prefix
+   .. autoattribute:: tel_id
+   .. autoattribute:: tel_type_id
