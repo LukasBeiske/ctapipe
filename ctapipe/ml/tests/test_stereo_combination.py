@@ -65,8 +65,8 @@ def mono_table():
 @pytest.mark.parametrize("weights", ["konrad", "intensity", "none"])
 def test_predict_mean_energy(weights, mono_table):
     combine = StereoMeanCombiner(
-        algorithm="dummy",
-        combine_property="energy",
+        prefix="dummy",
+        property="energy",
         weights=weights,
     )
     stereo = combine.predict_table(mono_table)
@@ -92,8 +92,8 @@ def test_predict_mean_energy(weights, mono_table):
 
 def test_predict_mean_classification(mono_table):
     combine = StereoMeanCombiner(
-        algorithm="classifier",
-        combine_property="classification",
+        prefix="classifier",
+        property="classification",
     )
     stereo = combine.predict_table(mono_table)
     assert stereo.colnames == [
@@ -118,8 +118,8 @@ def test_predict_mean_classification(mono_table):
 
 def test_predict_mean_disp(mono_table):
     combine = StereoMeanCombiner(
-        algorithm="disp",
-        combine_property="geometry",
+        prefix="disp",
+        property="geometry",
     )
     stereo = combine.predict_table(mono_table)
     assert stereo.colnames == [
@@ -205,18 +205,18 @@ def test_mean_prediction_single_event(weights):
     )
 
     combine_energy = StereoMeanCombiner(
-        algorithm="dummy",
-        combine_property="energy",
+        prefix="dummy",
+        property="energy",
         weights=weights,
     )
     combine_classification = StereoMeanCombiner(
-        algorithm="dummy",
-        combine_property="classification",
+        prefix="dummy",
+        property="classification",
         weights=weights,
     )
     combine_geometry = StereoMeanCombiner(
-        algorithm="dummy",
-        combine_property="geometry",
+        prefix="dummy",
+        property="geometry",
         weights=weights,
     )
     combine_energy(event)

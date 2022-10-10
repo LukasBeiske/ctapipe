@@ -53,6 +53,10 @@ TrainEnergyRegressor:
       - intensity_kurtosis
       - area
 
+    stereo_combiner_cls: "StereoMeanCombiner"
+    StereoMeanCombiner:
+      log_target: true
+
     QualityQuery:
       quality_criteria:
         - ["HillasValid", "HillasReconstructor_is_valid"]
@@ -132,6 +136,8 @@ TrainParticleIdClassifier:
 
 
 TrainDispReconstructor:
+  CrossValidator:
+    n_cross_validations: 5
 
   random_seed: 42
 
@@ -193,6 +199,3 @@ TrainDispReconstructor:
     FeatureGenerator:
       features:
         - ["area", "hillas_width * hillas_length"]
-
-  CrossValidator:
-    n_cross_validations: 5

@@ -10,7 +10,7 @@ from astropy.table.operations import hstack, vstack
 from tqdm.auto import tqdm
 
 from ctapipe.core.tool import Tool
-from ctapipe.core.traits import Bool, Path, create_class_enum_trait, flag
+from ctapipe.core.traits import Bool, Path, flag
 from ctapipe.io import EventSource, TableLoader, write_table
 from ctapipe.io.tableio import TelListToMaskTransform
 
@@ -60,16 +60,12 @@ class ApplyModels(Tool):
         exists=True,
         directory_ok=False,
     ).tag(config=True)
+
     disp_models_path = Path(
         default_value=None,
         allow_none=True,
         exists=True,
         directory_ok=False,
-    ).tag(config=True)
-
-    stereo_combiner_type = create_class_enum_trait(
-        base_class=StereoCombiner,
-        default_value="StereoMeanCombiner",
     ).tag(config=True)
 
     aliases = {
@@ -128,13 +124,6 @@ class ApplyModels(Tool):
                 self.energy_regressor_path,
                 parent=self,
             )
-            self.combine_energy = StereoCombiner.from_name(
-                self.stereo_combiner_type,
-                combine_property="energy",
-                algorithm=self.energy_regressor.model_cls,
-                log_target=True,
-                parent=self,
-            )
             return True
         return False
 
@@ -142,12 +131,6 @@ class ApplyModels(Tool):
         if self.particle_classifier_path is not None:
             self.classifier = ParticleIdClassifier.read(
                 self.particle_classifier_path,
-                parent=self,
-            )
-            self.combine_classification = StereoCombiner.from_name(
-                self.stereo_combiner_type,
-                combine_property="classification",
-                algorithm=self.classifier.model_cls,
                 parent=self,
             )
             return True
@@ -159,29 +142,29 @@ class ApplyModels(Tool):
                 self.disp_models_path,
                 parent=self,
             )
-            self.combine_disp = StereoCombiner.from_name(
-                self.stereo_combiner_type,
-                combine_property="geometry",
-                algorithm=self.disp_models.prefix,
-                parent=self,
-            )
             return True
         return False
 
     def start(self):
         """Apply models to input tables"""
         if self.apply_regressor:
-            self.log.info("Apply regressor.")
+            self.log.info("Applying regressor to telescope events")
             mono_predictions = self._apply(self.energy_regressor, "energy")
-            self._combine(self.combine_energy, mono_predictions)
+            self.log.info(
+                "Combining telescope-wise energy predictions to array event prediction"
+            )
+            self._combine(self.energy_regressor.stereo_combiner, mono_predictions)
 
         if self.apply_classifier:
-            self.log.info("Apply classifier.")
+            self.log.info("Applying classifier to telescope events")
             mono_predictions = self._apply(self.classifier, "classification")
-            self._combine(self.combine_classification, mono_predictions)
+            self.log.info(
+                "Combining telescope-wise particle id predictions to array event prediction"
+            )
+            self._combine(self.classifier.stereo_combiner, mono_predictions)
 
         if self.apply_geometry:
-            self.log.info("Apply disp reconstructors.")
+            self.log.info("Applying disp models to telescope events.")
 
             # Atm pointing information can only be accessed using EventSource
             # Pointing information will be added to HDF5 tables soon, see #1902
@@ -190,7 +173,10 @@ class ApplyModels(Tool):
                 pointing_azimuth = event.pointing.array_azimuth.to(u.deg)
 
             mono_predictions = self._apply_disp(pointing_altitude, pointing_azimuth)
-            self._combine(self.combine_disp, mono_predictions)
+            self.log.info(
+                "Combining telescope-wise geometry predictions to array event prediction"
+            )
+            self._combine(self.disp_models.stereo_combiner, mono_predictions)
 
     def _apply(self, reconstructor, parameter):
         prefix = reconstructor.model_cls
@@ -317,7 +303,7 @@ class ApplyModels(Tool):
         write_table(
             stereo_predictions,
             self.loader.input_url,
-            f"/dl2/event/subarray/{combiner.combine_property}/{combiner.algorithm}",
+            f"/dl2/event/subarray/{combiner.property}/{combiner.prefix}",
             mode="a",
             overwrite=self.overwrite,
         )
