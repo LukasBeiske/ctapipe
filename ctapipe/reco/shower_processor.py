@@ -9,7 +9,7 @@ This processor will be able to process a shower/event in 3 steps:
 """
 from ..containers import ArrayEventContainer
 from ..core import Component
-from ..core.traits import List, create_class_enum_trait
+from ..core.traits import CaselessStrEnum, List
 from ..instrument import SubarrayDescription
 from . import Reconstructor
 
@@ -25,8 +25,15 @@ class ShowerProcessor(Component):
     """
 
     reconstructor_types = List(
-        create_class_enum_trait(
-            Reconstructor,
+        # we need to do this by hand here, to avoid a circular import /
+        # the ml models not yet being available here
+        CaselessStrEnum(
+            [
+                "HillasReconstructor",
+                "HillasIntersection",
+                "EnergyRegressor",
+                "ParticleIdClassifier",
+            ],
             default_value="HillasReconstructor",
         ),
         default_value=["HillasReconstructor"],
@@ -39,15 +46,15 @@ class ShowerProcessor(Component):
         """
         Parameters
         ----------
-        subarray: SubarrayDescription
+        subarray : SubarrayDescription
             Description of the subarray. Provides information about the
             camera which are useful in calibration. Also required for
             configuring the TelescopeParameter traitlets.
-        config: traitlets.loader.Config
+        config : traitlets.loader.Config
             Configuration specified by config file or cmdline arguments.
             Used to set traitlet values.
             This is mutually exclusive with passing a ``parent``.
-        parent: ctapipe.core.Component or ctapipe.core.Tool
+        parent : ctapipe.core.Component or ctapipe.core.Tool
             Parent of this component in the configuration hierarchy,
             this is mutually exclusive with passing ``config``
         """
