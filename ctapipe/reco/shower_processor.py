@@ -9,8 +9,11 @@ This processor will be able to process a shower/event in 3 steps:
 """
 from ..containers import ArrayEventContainer
 from ..core import Component
-from ..core.traits import CaselessStrEnum, List
+from ..core.traits import List, create_class_enum_trait
 from ..instrument import SubarrayDescription
+
+# needed to make ml reconstructors visible as subclasses of Reconstructor
+from ..ml.sklearn import EnergyRegressor, ParticleIdClassifier  # noqa
 from . import Reconstructor
 
 
@@ -25,16 +28,8 @@ class ShowerProcessor(Component):
     """
 
     reconstructor_types = List(
-        # we need to do this by hand here, to avoid a circular import /
-        # the ml models not yet being available here
-        CaselessStrEnum(
-            [
-                "HillasReconstructor",
-                "HillasIntersection",
-                "EnergyRegressor",
-                "ParticleIdClassifier",
-                "DispReconstructor",
-            ],
+        create_class_enum_trait(
+            Reconstructor,
             default_value="HillasReconstructor",
         ),
         default_value=["HillasReconstructor"],
@@ -83,7 +78,5 @@ class ShowerProcessor(Component):
         event : ctapipe.containers.ArrayEventContainer
             Top-level container for all event information.
         """
-        for reco_type, reconstructor in zip(
-            self.reconstructor_types, self.reconstructors
-        ):
+        for reconstructor in self.reconstructors:
             reconstructor(event)
