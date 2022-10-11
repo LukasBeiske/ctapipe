@@ -11,10 +11,10 @@ from ..containers import ArrayEventContainer
 from ..core import Component
 from ..core.traits import List, create_class_enum_trait
 from ..instrument import SubarrayDescription
+from . import Reconstructor
 
 # needed to make ml reconstructors visible as subclasses of Reconstructor
-from ..ml.sklearn import EnergyRegressor, ParticleIdClassifier  # noqa
-from . import Reconstructor
+from .. import ml  # noqa isort: skip
 
 
 class ShowerProcessor(Component):
@@ -28,10 +28,7 @@ class ShowerProcessor(Component):
     """
 
     reconstructor_types = List(
-        create_class_enum_trait(
-            Reconstructor,
-            default_value="HillasReconstructor",
-        ),
+        create_class_enum_trait(Reconstructor, default_value="HillasReconstructor"),
         default_value=["HillasReconstructor"],
         help=f"The stereo geometry reconstructors to be used. Choices are: {list(Reconstructor.non_abstract_subclasses().keys())}",
     ).tag(config=True)
