@@ -11,6 +11,8 @@ from ..containers import ArrayEventContainer
 from ..core import Component
 from ..core.traits import List, create_class_enum_trait
 from ..instrument import SubarrayDescription
+
+# needed to make ml reconstructors visible as subclasses of Reconstructor
 from ..ml.sklearn import EnergyRegressor, ParticleIdClassifier  # noqa
 from . import Reconstructor
 
@@ -76,7 +78,5 @@ class ShowerProcessor(Component):
         event : ctapipe.containers.ArrayEventContainer
             Top-level container for all event information.
         """
-        for reco_type, reconstructor in zip(
-            self.reconstructor_types, self.reconstructors
-        ):
+        for reconstructor in self.reconstructors:
             reconstructor(event)
