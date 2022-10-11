@@ -250,7 +250,7 @@ class StereoMeanCombiner(StereoCombiner):
             self._combine_energy(event)
         elif self.property == "classification":
             self._combine_classification(event)
-        elif self.combine_property == "geometry":
+        elif self.property == "geometry":
             self._combine_disp(event)
         else:
             raise NotImplementedError(f"Cannot combine {self.property}")
