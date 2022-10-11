@@ -612,6 +612,7 @@ class DispReconstructor(Reconstructor):
                     "Supplied subarray has different telescopes than subarray loaded form file"
                 )
             self.__dict__.update(loaded.__dict__)
+            self.subarray = subarray
 
     def _new_models(self):
         norm_regressor = SUPPORTED_REGRESSORS[self.norm_cls](**self.norm_config)
