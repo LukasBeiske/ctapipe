@@ -1,5 +1,5 @@
 """
-Helper functions and components for handling coordinate transformations
+Helper functions for handling coordinate transformations
 during origin reconstruction using the disp method.
 """
 import warnings
