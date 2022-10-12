@@ -3,7 +3,6 @@ Tool to apply machine learning models in bulk (as opposed to event by event).
 """
 import shutil
 
-import astropy.units as u
 import numpy as np
 import tables
 from astropy.table.operations import hstack, vstack
@@ -11,7 +10,7 @@ from tqdm.auto import tqdm
 
 from ctapipe.core.tool import Tool
 from ctapipe.core.traits import Bool, Path, flag
-from ctapipe.io import EventSource, TableLoader, write_table
+from ctapipe.io import TableLoader, write_table
 from ctapipe.io.tableio import TelListToMaskTransform
 
 from ..sklearn import DispReconstructor, EnergyRegressor, ParticleIdClassifier
@@ -112,6 +111,7 @@ class ApplyModels(Tool):
             load_dl2=True,
             load_simulated=True,
             load_instrument=True,
+            load_observation_info=True,
         )
 
         self.apply_regressor = self._setup_regressor()
@@ -165,14 +165,7 @@ class ApplyModels(Tool):
 
         if self.apply_geometry:
             self.log.info("Applying disp models to telescope events.")
-
-            # Atm pointing information can only be accessed using EventSource
-            # Pointing information will be added to HDF5 tables soon, see #1902
-            for event in EventSource(self.input_url, max_events=1):
-                pointing_altitude = event.pointing.array_altitude.to(u.deg)
-                pointing_azimuth = event.pointing.array_azimuth.to(u.deg)
-
-            mono_predictions = self._apply_disp(pointing_altitude, pointing_azimuth)
+            mono_predictions = self._apply_disp()
             self.log.info(
                 "Combining telescope-wise geometry predictions to array event prediction"
             )
@@ -222,7 +215,7 @@ class ApplyModels(Tool):
 
         return vstack(tel_tables)
 
-    def _apply_disp(self, pointing_altitude, pointing_azimuth):
+    def _apply_disp(self):
         prefix = self.disp_models.prefix
 
         tables = []
@@ -253,7 +246,7 @@ class ApplyModels(Tool):
             table.remove_columns([c for c in table.colnames if c.startswith(prefix)])
 
             disp_predictions, altaz_predictions = self.disp_models.predict_table(
-                tel, table, pointing_altitude, pointing_azimuth
+                tel, table
             )
             table = hstack(
                 [

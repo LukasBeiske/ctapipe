@@ -779,9 +779,7 @@ class DispReconstructor(Reconstructor):
 
         self.stereo_combiner(event)
 
-    def predict_table(
-        self, key, table: Table, pointing_altitude, pointing_azimuth
-    ) -> Tuple(Table, Table):
+    def predict_table(self, key, table: Table) -> Tuple(Table, Table):
         """Predict on a table of events
 
         Parameters
@@ -797,7 +795,6 @@ class DispReconstructor(Reconstructor):
         altaz_table : `~astropy.table.Table`
             Table with resulting predictions of horizontal coordinates
         """
-        # Pointing information is a temporary solution for simulations using a single pointing position
         table = self.generate_features(table)
 
         n_rows = len(table)
@@ -827,11 +824,12 @@ class DispReconstructor(Reconstructor):
         fov_lon = table["hillas_fov_lon"] + disp * np.cos(table["hillas_psi"].to(u.rad))
         fov_lat = table["hillas_fov_lat"] + disp * np.sin(table["hillas_psi"].to(u.rad))
 
+        # For now: Assume parallel pointing for each run
         alt, az = telescope_to_horizontal(
             lon=fov_lon,
             lat=fov_lat,
-            pointing_alt=pointing_altitude,
-            pointing_az=pointing_azimuth,
+            pointing_alt=table["subarray_pointing_lat"],
+            pointing_az=table["subarray_pointing_lon"],
         )
 
         altaz_result = Table(

@@ -4,7 +4,7 @@ import numpy as np
 from ctapipe.coordinates.disp import horizontal_to_telescope
 from ctapipe.core import Tool
 from ctapipe.core.traits import Bool, Int, Path
-from ctapipe.io import EventSource, TableLoader
+from ctapipe.io import TableLoader
 
 from ..preprocessing import check_valid_rows
 from ..sklearn import CrossValidator, DispReconstructor
@@ -55,6 +55,7 @@ class TrainDispReconstructor(Tool):
             load_dl2=True,
             load_simulated=True,
             load_instrument=True,
+            load_observation_info=True,
         )
 
         self.models = DispReconstructor(self.loader.subarray, parent=self)
@@ -68,15 +69,6 @@ class TrainDispReconstructor(Tool):
 
         types = self.loader.subarray.telescope_types
         self.log.info("Inputfile: %s", self.loader.input_url)
-
-        # Atm pointing information can only be accessed using EventSource
-        # Pointing information will be added to HDF5 tables soon, see #1902
-        for event in EventSource(self.loader.input_url, max_events=1):
-            self.pointing_alt = event.pointing.array_altitude.to(u.deg)
-            self.pointing_az = event.pointing.array_azimuth.to(u.deg)
-
-        self.log.info("Simulated pointing altitude: %s", self.pointing_alt)
-        self.log.info("Simulated pointing azimuth: %s", self.pointing_az)
 
         self.log.info("Training models for %d types", len(types))
         for tel_type in types:
@@ -124,8 +116,8 @@ class TrainDispReconstructor(Tool):
         fov_lon, fov_lat = horizontal_to_telescope(
             alt=table["true_alt"],
             az=table["true_az"],
-            pointing_alt=self.pointing_alt,
-            pointing_az=self.pointing_az,
+            pointing_alt=table["subarray_pointing_lat"],
+            pointing_az=table["subarray_pointing_lon"],
         )
 
         # numpy's trigonometric functions need radians
