@@ -57,47 +57,6 @@ SUPPORTED_REGRESSORS = dict(all_estimators("regressor"))
 SUPPORTED_MODELS = {**SUPPORTED_CLASSIFIERS, **SUPPORTED_REGRESSORS}
 
 
-def _collect_features(
-    event: ArrayEventContainer, tel_id: int, instrument_table: Table
-) -> Table:
-    """Loop over all containers with features.
-
-    Parameters
-    ----------
-    event: ArrayEventContainer
-
-    Returns
-    -------
-    Table
-    """
-    features = {}
-
-    features.update(
-        event.dl1.tel[tel_id].parameters.as_dict(
-            add_prefix=True,
-            recursive=True,
-            flatten=True,
-        )
-    )
-    features.update(
-        event.dl2.tel[tel_id].as_dict(
-            add_prefix=False,  # would duplicate prefix, as this is part of the name of the container
-            recursive=True,
-            flatten=True,
-        )
-    )
-    features.update(
-        event.dl2.stereo.as_dict(
-            add_prefix=False,  # see above
-            recursive=True,
-            flatten=True,
-        )
-    )
-    features.update(instrument_table.loc[tel_id])
-
-    return Table({k: [v] for k, v in features.items()})
-
-
 class SKLearnReconstructor(Reconstructor):
     """Base Class for a Machine Learning Based Reconstructor.
 
@@ -717,7 +676,7 @@ class DispReconstructor(Reconstructor):
         event: ArrayEventContainer
         """
         for tel_id in event.trigger.tels_with_trigger:
-            table = _collect_features(event, tel_id, self.instrument_table)
+            table = collect_features(event, tel_id, self.instrument_table)
             table = self.generate_features(table)
 
             passes_quality_checks = self.qualityquery.get_table_mask(table)[0]
