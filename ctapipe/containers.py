@@ -755,6 +755,11 @@ class ReconstructedGeometryContainer(Container):
     alt_uncert = Field(nan * u.deg, "reconstructed altitude uncertainty", unit=u.deg)
     az = Field(nan * u.deg, "reconstructed azimuth", unit=u.deg)
     az_uncert = Field(nan * u.deg, "reconstructed azimuth uncertainty", unit=u.deg)
+    ang_distance_uncert = Field(
+        nan * u.deg,
+        "uncertainty radius of reconstructed altitude-azimuth position",
+        unit=u.deg,
+    )
     core_x = Field(
         nan * u.m, "reconstructed x coordinate of the core position", unit=u.m
     )

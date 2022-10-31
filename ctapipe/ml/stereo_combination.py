@@ -6,7 +6,7 @@ from astropy.coordinates import (
     AltAz,
     CartesianRepresentation,
     SkyCoord,
-    UnitSphericalRepresentation,
+    SphericalRepresentation,
 )
 from astropy.table import Table
 
@@ -216,15 +216,20 @@ class StereoMeanCombiner(StereoCombiner):
                 az=az_values,
                 frame=AltAz(),
             )
+            # https://en.wikipedia.org/wiki/Von_Mises%E2%80%93Fisher_distribution#Mean_direction
             mono_x, mono_y, mono_z = coord.cartesian.get_xyz()
             stereo_x = np.average(mono_x, weights=weights)
             stereo_y = np.average(mono_y, weights=weights)
             stereo_z = np.average(mono_z, weights=weights)
 
-            cartesian = CartesianRepresentation(x=stereo_x, y=stereo_y, z=stereo_z)
-            mean_altaz = SkyCoord(
-                cartesian.represent_as(UnitSphericalRepresentation), frame=AltAz()
-            )
+            mean_cartesian = CartesianRepresentation(x=stereo_x, y=stereo_y, z=stereo_z)
+            mean_spherical = mean_cartesian.represent_as(SphericalRepresentation)
+            mean_altaz = SkyCoord(mean_spherical, frame=AltAz())
+
+            # https://en.wikipedia.org/wiki/Directional_statistics#Measures_of_location_and_spread
+            r = mean_spherical.distance.to_value()
+            std = np.sqrt(-2 * np.log(r))
+
             valid = True
         else:
             mean_altaz = SkyCoord(
@@ -232,11 +237,13 @@ class StereoMeanCombiner(StereoCombiner):
                 az=u.Quantity(np.nan, u.deg, copy=False),
                 frame=AltAz(),
             )
+            std = np.nan
             valid = False
 
         event.dl2.stereo.geometry[self.prefix] = ReconstructedGeometryContainer(
             alt=mean_altaz.alt.to(u.deg),
             az=mean_altaz.az.to(u.deg),
+            ang_distance_uncert=u.Quantity(np.rad2deg(std), u.deg, copy=False),
             telescopes=ids,
             is_valid=valid,
             prefix=self.prefix,
@@ -342,6 +349,7 @@ class StereoMeanCombiner(StereoCombiner):
                     az=valid_predictions[f"{prefix}_az"],
                     frame=AltAz(),
                 )
+                # https://en.wikipedia.org/wiki/Von_Mises%E2%80%93Fisher_distribution#Mean_direction
                 mono_x, mono_y, mono_z = coord.cartesian.get_xyz()
 
                 stereo_x = _weighted_mean_ufunc(
@@ -357,25 +365,25 @@ class StereoMeanCombiner(StereoCombiner):
                 mean_cartesian = CartesianRepresentation(
                     x=stereo_x, y=stereo_y, z=stereo_z
                 )
-                mean_altaz = SkyCoord(
-                    mean_cartesian.represent_as(UnitSphericalRepresentation),
-                    frame=AltAz(),
-                )
+                mean_spherical = mean_cartesian.represent_as(SphericalRepresentation)
+                mean_altaz = SkyCoord(mean_spherical, frame=AltAz())
+
+                # https://en.wikipedia.org/wiki/Directional_statistics#Measures_of_location_and_spread
+                r = mean_spherical.distance.to_value()
+                std = np.sqrt(-2 * np.log(r))
             else:
                 mean_altaz = SkyCoord(
-                    alt=np.full(n_array_events, np.nan),
-                    az=np.full(n_array_events, np.nan),
+                    alt=u.Quantity(np.full(n_array_events, np.nan), u.deg, copy=False),
+                    az=u.Quantity(np.full(n_array_events, np.nan), u.deg, copy=False),
                     frame=AltAz(),
                 )
+                std = np.full(n_array_events, np.nan)
 
             stereo_table[f"{self.prefix}_alt"] = mean_altaz.alt.to(u.deg)
-            stereo_table[f"{self.prefix}_alt_uncert"] = u.Quantity(
-                np.nan, u.deg, copy=False
-            )
-
             stereo_table[f"{self.prefix}_az"] = mean_altaz.az.to(u.deg)
-            stereo_table[f"{self.prefix}_az_uncert"] = u.Quantity(
-                np.nan, u.deg, copy=False
+
+            stereo_table[f"{self.prefix}_ang_distance_uncert"] = u.Quantity(
+                np.rad2deg(std), u.deg, copy=False
             )
 
             stereo_table[f"{self.prefix}_is_valid"] = np.logical_and(
