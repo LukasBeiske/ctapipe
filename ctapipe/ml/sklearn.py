@@ -686,7 +686,7 @@ class DispReconstructor(Reconstructor):
                 disp_container = DispContainer(
                     norm=norm[0],
                     sign=sign[0],
-                    is_valid=valid[0],
+                    parameters_is_valid=valid[0],
                 )
 
                 if valid:
@@ -723,7 +723,7 @@ class DispReconstructor(Reconstructor):
                 disp_container = DispContainer(
                     norm=u.Quantity(np.nan, self.norm_unit),
                     sign=self.sign_invalid_class,
-                    is_valid=False,
+                    parameters_is_valid=False,
                 )
                 altaz_container = ReconstructedGeometryContainer(
                     alt=u.Quantity(np.nan, u.deg, copy=False),
@@ -768,7 +768,7 @@ class DispReconstructor(Reconstructor):
             {
                 f"{self.prefix}_tel_norm": norm,
                 f"{self.prefix}_tel_sign": sign,
-                f"{self.prefix}_tel_is_valid": is_valid,
+                f"{self.prefix}_tel_parameters_is_valid": is_valid,
             }
         )
         add_defaults_and_meta(

@@ -249,13 +249,7 @@ class ApplyModels(Tool):
                 tel, table
             )
             table = hstack(
-                [
-                    table,
-                    altaz_predictions,
-                    disp_predictions[
-                        f"{prefix}_tel_norm", f"{prefix}_tel_sign"
-                    ],  # Avoid duplication of "disp_tel_is_valid" column
-                ],
+                [table, altaz_predictions, disp_predictions],
                 join_type="exact",
                 metadata_conflicts="ignore",
             )

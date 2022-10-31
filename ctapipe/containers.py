@@ -858,7 +858,8 @@ class DispContainer(Container):
 
     norm = Field(nan * u.deg, "reconstructed absolute value for disp", unit=u.deg)
     sign = Field(nan, "reconstructed sign for disp")
-    is_valid = Field(False, "true if the predictions are valid")
+    # "parameters_is_valid" instead of "is_valid" to avoid duplication of "disp_is_valid" column
+    parameters_is_valid = Field(False, "true if the predictions are valid")
 
 
 class ReconstructedContainer(Container):
