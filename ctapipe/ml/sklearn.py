@@ -895,9 +895,9 @@ class CrossValidator(Component):
                         {
                             "cv_fold": np.full(len(truth_norm), fold, dtype=np.uint8),
                             "tel_type": [str(telescope_type)] * len(truth_norm),
-                            "norm_predictions": cv_prediction_norm,
+                            "norm_prediction": cv_prediction_norm,
                             "norm_truth": truth_norm,
-                            "sign_predictions": cv_prediction_sign,
+                            "sign_prediction": cv_prediction_sign,
                             "sign_truth": truth_sign,
                             "true_energy": test["true_energy"],
                         }
@@ -913,7 +913,7 @@ class CrossValidator(Component):
                         {
                             "cv_fold": np.full(len(truth), fold, dtype=np.uint8),
                             "tel_type": [str(telescope_type)] * len(truth),
-                            "predictions": cv_prediction,
+                            "prediction": cv_prediction,
                             "truth": truth,
                             "true_energy": test["true_energy"],
                         }
