@@ -243,7 +243,7 @@ class StereoMeanCombiner(StereoCombiner):
         event.dl2.stereo.geometry[self.prefix] = ReconstructedGeometryContainer(
             alt=mean_altaz.alt.to(u.deg),
             az=mean_altaz.az.to(u.deg),
-            ang_distance_uncert=u.Quantity(np.rad2deg(std), u.deg, copy=False),
+            ang_distance_uncert=u.Quantity(std, u.deg, copy=False),
             telescopes=ids,
             is_valid=valid,
             prefix=self.prefix,
@@ -383,7 +383,7 @@ class StereoMeanCombiner(StereoCombiner):
             stereo_table[f"{self.prefix}_az"] = mean_altaz.az.to(u.deg)
 
             stereo_table[f"{self.prefix}_ang_distance_uncert"] = u.Quantity(
-                np.rad2deg(std), u.deg, copy=False
+                std, u.deg, copy=False
             )
 
             stereo_table[f"{self.prefix}_is_valid"] = np.logical_and(
