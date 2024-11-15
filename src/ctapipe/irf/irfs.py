@@ -21,7 +21,8 @@ from pyirf.irf import (
 )
 from pyirf.simulations import SimulatedEventsInfo
 
-from ..core.traits import AstroQuantity, Bool, Float, Integer
+from ..core.traits import AstroQuantity, Bool, Dict, Float, Integer, List
+from ._gammapy_map_axis import MapAxes, MapAxis
 from .binning import DefaultFoVOffsetBins, DefaultRecoEnergyBins, DefaultTrueEnergyBins
 
 
@@ -175,6 +176,85 @@ class EffectiveAreaMakerBase(DefaultTrueEnergyBins):
         -------
         BinTableHDU
         """
+
+
+class EffectiveAreaMakerTest(EffectiveAreaMakerBase):
+    axes = List(
+        Dict(),
+        default_value=[
+            dict(
+                name="energy_true",
+                unit="TeV",
+                low=0.01,
+                high=500,
+                n_bins=40,
+                spacing="log",
+            ),
+            dict(name="fov_theta", unit="deg", low=0, high=5, n_bins=5, spacing="lin"),
+        ],
+    ).tag(config=True)
+
+    def __init__(self, parent=None, **kwargs):
+        super().__init__(parent, **kwargs)
+
+        mapaxes = []
+        for ax in self.axes:
+            if ax["spacing"] == "log":
+                spacing_func = np.logspace
+                ax["low"] = np.log10(ax["low"])
+                ax["high"] = np.log10(ax["high"])
+            elif ax["spacing"] == "lin":
+                spacing_func = np.linspace
+            else:
+                raise NotImplementedError()
+
+            mapaxes.append(
+                MapAxis(
+                    nodes=spacing_func(ax["low"], ax["high"], ax["n_bins"] + 1),
+                    interp=ax["spacing"],
+                    name=ax["name"],
+                    unit=ax["unit"],
+                )
+            )
+
+        self.mapaxes = MapAxes(mapaxes)
+
+    def make_aeff_hdu(
+        self,
+        events: QTable,
+        point_like: bool,
+        signal_is_point_like: bool,
+        sim_info: SimulatedEventsInfo,
+        extname: str = "EFFECTIVE AREA",
+    ) -> BinTableHDU:
+        if np.all(np.sort(self.mapaxes.names) == ["energy_true", "fov_theta"]):
+            # For point-like gammas the effective area can only be calculated
+            # at one point in the FoV.
+            if signal_is_point_like:
+                aeff = effective_area_per_energy(
+                    selected_events=events,
+                    simulation_info=sim_info,
+                    true_energy_bins=self.mapaxes["energy_true"].edges,
+                )
+                # +1 dimension for FOV offset
+                aeff = aeff[..., np.newaxis]
+            else:
+                aeff = effective_area_per_energy_and_fov(
+                    selected_events=events,
+                    simulation_info=sim_info,
+                    true_energy_bins=self.mapaxes["energy_true"].edges,
+                    fov_offset_bins=self.mapaxes["fov_theta"].edges,
+                )
+
+            return create_aeff2d_hdu(
+                effective_area=aeff,
+                true_energy_bins=self.mapaxes["energy_true"].edges,
+                fov_offset_bins=self.mapaxes["fov_theta"].edges,
+                point_like=point_like,
+                extname=extname,
+            )
+        else:
+            raise NotImplementedError()
 
 
 class EffectiveArea2dMaker(EffectiveAreaMakerBase, DefaultFoVOffsetBins):
